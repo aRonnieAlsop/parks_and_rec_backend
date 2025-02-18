@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import db from "./db.js"; 
+import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +24,30 @@ app.use(
     },
   })
 );
+
+// serve static files (images):
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// configured multer for image uploads:
+const storage = multer.diskStorage({
+  destination: "./uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // rename file with timestamp
+  },
+});
+
+
+const upload = multer({ storage });
+
+// route to upload an image:
+app.post("/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  res.json({ imageUrl: `/uploads/${req.file.filename}` });
+});
 
 app.use(express.json());
 
