@@ -1,5 +1,24 @@
 # Parks & Rec Backend 🏞
 
+
+🚀 **This backend is part of a mock project** to demonstrate database management for a Parks & Recreation system.  
+In a **real-world scenario**, database updates **would not require backend redeployment**—administrative users would be able to modify program data directly through their **web interface**, without needing technical knowledge.
+
+## ⚠️ Important Notes:
+- 🛠 **This mock version uses SQLite3**, meaning **database updates require backend redeployment** (since SQLite3 is file-based).
+- ☁️ **In a real deployment, a cloud-based database** (e.g., **Firebase Firestore, Supabase, or PostgreSQL**) would be used to **allow real-time admin updates** via the user interface.
+- 🔧 **Administrative users wouldn't need to know SQL or web development**—they would interact with the database through a frontend system designed for layman use.
+
+## 💡 How a Real Deployment Would Work:
+- ✅ A **cloud database** would replace SQLite3, enabling live updates.
+- ✅ The backend would be **hosted persistently**, not tied to Git commits.
+- ✅ Admin users could **add, edit, and delete programs** **without redeploying the backend**.
+- ✅ Access control would be implemented to ensure only authorized users can make changes.
+
+🚀 **This backend is structured for demonstration, but a real-world implementation would be fully automated for ease of use!**
+
+---
+
 This repository contains the backend for the 🏸 Parks & Recreation ⚽︎ application, built using **Express.js** and **SQLite3**. The backend handles database interactions for both **public users** and **administrative users**, allowing them to make requests to fetch, add, and modify program data.
 
 ## Features
