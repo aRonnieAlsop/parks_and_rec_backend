@@ -53,13 +53,13 @@ app.use(express.json());
 
 // endpoint to fetch all blogs
 app.get('/programs', (req, res) => {
-  const sql = 'SELECT * FROM programs'; // Query to fetch all rows from the programs
+  const sql = 'SELECT * FROM programs'; // query to fetch all rows from the programs
   db.all(sql, [], (err, rows) => {
     if (err) {
       console.error('Error fetching programs:', err.message);
       res.status(500).json({ error: 'Failed to fetch programs' });
     } else {
-      res.json(rows); // Return all blogs as JSON
+      res.json(rows); 
     }
   });
 });
