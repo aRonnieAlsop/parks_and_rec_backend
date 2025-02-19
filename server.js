@@ -51,22 +51,17 @@ app.post("/upload", upload.single("image"), (req, res) => {
 
 app.use(express.json());
 
-// endpoint to fetch all programs:
-app.get("/programs", async (req, res) => {
-  try {
-    const sql = "SELECT * FROM programs";
-
-    db.all(sql, [], (err, rows) => {
-      if (err) {
-        console.error("Error fetching programs:", err.message);
-        res.status(500).json({ error: "Failed to fetch programs" });
-      } else {
-        res.json(rows);
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// endpoint to fetch all blogs
+app.get('/programs', (req, res) => {
+  const sql = 'SELECT * FROM programs'; // Query to fetch all rows from the programs
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      console.error('Error fetching programs:', err.message);
+      res.status(500).json({ error: 'Failed to fetch programs' });
+    } else {
+      res.json(rows); // Return all blogs as JSON
+    }
+  });
 });
 
 // catch-all for invalid routes:
