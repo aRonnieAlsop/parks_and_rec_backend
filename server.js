@@ -54,7 +54,8 @@ app.use(express.json());
 // endpoint to fetch all programs:
 app.get("/programs", async (req, res) => {
   try {
-    const sql = "SELECT * FROM programs";
+    const sql = "SELECT id, name, location, description, start_time, start_date, end_date, end_time FROM programs";
+
     db.all(sql, [], (err, rows) => {
       if (err) {
         console.error("Error fetching programs:", err.message);
