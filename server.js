@@ -37,8 +37,6 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname)); // rename file with timestamp
   },
 });
-
-
 const upload = multer({ storage });
 
 // route to upload an image:
@@ -49,27 +47,75 @@ app.post("/upload", upload.single("image"), (req, res) => {
   res.json({ imageUrl: `/uploads/${req.file.filename}` });
 });
 
+// Middleware for JSON body parsing (placed before any endpoints that require JSON parsing)
 app.use(express.json());
 
-// endpoint to fetch all blogs
+// ✅ **Fetch all programs**
 app.get('/programs', (req, res) => {
-  const sql = 'SELECT * FROM programs'; // query to fetch all rows from the programs
+  const sql = 'SELECT * FROM programs';
   db.all(sql, [], (err, rows) => {
     if (err) {
       console.error('Error fetching programs:', err.message);
       res.status(500).json({ error: 'Failed to fetch programs' });
     } else {
-      res.json(rows); 
+      res.json(rows);
     }
   });
 });
 
-// catch-all for invalid routes:
+// ✅ **Register for a program (NEW POST ROUTE)**
+app.post('/register', (req, res) => {
+  const { program_id, full_name, age, special_notes } = req.body;
+
+  if (!program_id || !full_name || !age) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const sql = `INSERT INTO roster (program_id, full_name, age, special_notes) VALUES (?, ?, ?, ?)`;
+  db.run(sql, [program_id, full_name, age, special_notes || ''], function (err) {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Registration successful', id: this.lastID });
+  });
+});
+
+// ✅ **Fetch all roster**
+app.get('/roster', (req, res) => {
+  const sql = 'SELECT * FROM roster';
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      console.error('Error fetching roster:', err.message);
+      res.status(500).json({ error: 'Failed to fetch roster' });
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
+// ✅ **Fetch roster for a specific program**
+app.get('/roster/:program_id', (req, res) => {
+  const { program_id } = req.params;
+
+  const sql = `SELECT roster.id, roster.full_name, roster.age, roster.special_notes, programs.name as program_name
+               FROM roster 
+               JOIN programs ON roster.program_id = programs.id
+               WHERE roster.program_id = ?`;
+               
+  db.all(sql, [program_id], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// ✅ **Catch-all for invalid routes (placed LAST)**
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// start the server
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
