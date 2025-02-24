@@ -63,6 +63,29 @@ app.get('/programs', (req, res) => {
   });
 });
 
+// for adding new event from admin end: 
+app.post('/programs', (req, res) => {
+  const { name, location, description, start_date, start_time, end_time, repeats, repeat_type } = req.body;
+  
+  // validate required fields
+  if (!name || !location || !start_date || !start_time || !end_time) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const sql = `
+    INSERT INTO programs (name, location, description, start_date, start_time, end_time, repeats, repeat_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  db.run(sql, [name, location, description, start_date, start_time, end_time, repeats, repeat_type], function(err) {
+    if (err) {
+      console.error("Error adding event:", err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Event added successfully', id: this.lastID });
+  });
+});
+
+
 // ✅ **Register for a program (NEW POST ROUTE)**
 app.post('/register', (req, res) => {
   const { program_id, full_name, age, special_notes } = req.body;
@@ -93,29 +116,56 @@ app.get('/roster', (req, res) => {
   });
 });
 
-// ✅ **Fetch roster for a specific program**
-app.get('/roster/:program_id', (req, res) => {
-  const { program_id } = req.params;
+app.post('/pay', (req, res) => {
+  const { program_id, full_name, age, special_notes, card_number, expiration, cvv } = req.body;
 
-  const sql = `SELECT roster.id, roster.full_name, roster.age, roster.special_notes, programs.name as program_name
-               FROM roster 
-               JOIN programs ON roster.program_id = programs.id
-               WHERE roster.program_id = ?`;
-               
-  db.all(sql, [program_id], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
+  // Fake validation
+  if (!program_id || !full_name || !age || !card_number || !expiration || !cvv) {
+      return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  // Fake card validation (just checking if the card has 16 digits)
+  if (card_number.length !== 16 || isNaN(card_number)) {
+      return res.status(400).json({ error: 'Invalid card details' });
+  }
+
+  // Simulate successful payment
+  console.log(`Payment processed for ${full_name} - Program ID: ${program_id}`);
+
+  // insert into the roster with `paid = 1`
+  const sql = `INSERT INTO roster (program_id, full_name, age, special_notes, paid) VALUES (?, ?, ?, ?, 1)`;
+  db.run(sql, [program_id, full_name, age, special_notes || '', 1], function (err) {
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.status(201).json({ message: 'Registration successful with payment!', id: this.lastID });
   });
 });
 
-// ✅ **Catch-all for invalid routes (placed LAST)**
+// fetch registrants only if they have paid: (in real 🌍 scenario, they possibly won't be able to sign up w/out paying)
+app.get('/roster/:program_id', (req, res) => {
+  const { program_id } = req.params;
+
+  const sql = `SELECT roster.id, roster.full_name, roster.age, roster.special_notes, roster.paid, programs.name as program_name
+               FROM roster 
+               JOIN programs ON roster.program_id = programs.id
+               WHERE roster.program_id = ? AND roster.paid = 1`;
+               
+  db.all(sql, [program_id], (err, rows) => {
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.json(rows);
+  });
+});
+
+
+// ✅ **catch-all for invalid routes (placed LAST)**
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Start the server
+// start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
